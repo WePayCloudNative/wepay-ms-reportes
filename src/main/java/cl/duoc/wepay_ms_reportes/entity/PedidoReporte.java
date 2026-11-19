@@ -2,7 +2,10 @@
 package cl.duoc.wepay_ms_reportes.entity;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "pedidos_reporte")
@@ -20,6 +23,12 @@ public class PedidoReporte {
     private LocalDateTime fechaCreacion;
 
     private LocalDateTime fechaEntrega;
+
+    private LocalDateTime fechaUltimoEvento;
+
+    // Relación con los productos del pedido
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DetallePedidoReporte> detalles = new ArrayList<>();
 
     public PedidoReporte() {
     }
@@ -71,4 +80,33 @@ public class PedidoReporte {
     public void setFechaEntrega(LocalDateTime fechaEntrega) {
         this.fechaEntrega = fechaEntrega;
     }
+
+    // Obtener los productos asociados al pedido
+    public List<DetallePedidoReporte> getDetalles() {
+        return detalles;
+    }
+
+    // Agregar un producto al pedido
+    public void agregarDetalle(DetallePedidoReporte detalle) {
+        detalle.setPedido(this);
+        this.detalles.add(detalle);
+    }
+
+    // Eliminar los detalles anteriores sin duplicarlos
+    public void limpiarDetalles() {
+        for (DetallePedidoReporte detalle : detalles) {
+            detalle.setPedido(null);
+        }
+
+        this.detalles.clear();
+    }
+
+    public LocalDateTime getFechaUltimoEvento() {
+        return fechaUltimoEvento;
+    }
+
+    public void setFechaUltimoEvento(LocalDateTime fechaUltimoEvento) {
+        this.fechaUltimoEvento = fechaUltimoEvento;
+    }
+
 }
