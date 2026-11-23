@@ -3,15 +3,17 @@ server:
   port: 8087
 
 spring:
+  # Oracle (Amazon RDS). Datos de conexión por variables de entorno.
   datasource:
     url: ${DB_URL}
-    username: ${DB_USERNAME}
+    username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: oracle.jdbc.OracleDriver
-
   jpa:
     hibernate:
-      ddl-auto: validate
+      # update crea las tablas si no existen. Con validate, antes hay que ejecutar
+      # database/schema-oracle-reportes.sql en el esquema de reportes.
+      ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: false
     open-in-view: false
 
