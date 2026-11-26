@@ -27,9 +27,11 @@ public class KafkaErrorConfig {
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
+                // -1 = que Kafka elija la partición: la DLT tiene 1 y orders.events tiene 3,
+                // así que usar la misma partición del mensaje original fallaría
                 (record, exception) -> new TopicPartition(
                         "orders.events.DLT",
-                        record.partition()));
+                        -1));
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(
                 recoverer,
