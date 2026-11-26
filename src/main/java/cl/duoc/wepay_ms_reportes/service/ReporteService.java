@@ -2,6 +2,8 @@
 package cl.duoc.wepay_ms_reportes.service;
 
 import cl.duoc.wepay_ms_reportes.dto.KpiResponseDTO;
+import cl.duoc.wepay_ms_reportes.dto.ResumenReporteDTO;
+import java.time.ZoneId;
 import cl.duoc.wepay_ms_reportes.dto.TopProductoDTO;
 import cl.duoc.wepay_ms_reportes.entity.DetallePedidoReporte;
 import cl.duoc.wepay_ms_reportes.entity.PedidoReporte;
@@ -206,4 +208,29 @@ public class ReporteService {
                 .toList();
     }
 
+
+    // =========================================
+    // RESUMEN DE UN PERÍODO (panel del admin)
+    // =========================================
+
+    /** Períodos de más de 2 días se agrupan por día; los cortos, por hora. */
+    private static final Duration LIMITE_POR_HORA = Duration.ofHours(48);
+
+    @Transactional(readOnly = true)
+    public ResumenReporteDTO resumen(LocalDateTime desde, LocalDateTime hasta, ZoneId zona) {
+        Duration largo = Duration.between(desde, hasta);
+        List<PedidoReporte> actuales = repository.creadosEntre(desde, hasta);
+        List<PedidoReporte> anteriores = repository.creadosEntre(desde.minus(largo), desde);
+        boolean porDia = largo.compareTo(LIMITE_POR_HORA) > 0;
+
+        return new ResumenReporteDTO(
+                desde.toString(),
+                hasta.toString(),
+                porDia ? "dia" : "hora",
+                CalculadoraReportes.indicadores(actuales),
+                CalculadoraReportes.indicadores(anteriores),
+                CalculadoraReportes.porEstado(actuales),
+                CalculadoraReportes.topProductos(actuales, 5),
+                CalculadoraReportes.ventasPorTramo(actuales, desde, hasta, zona, porDia));
+    }
 }

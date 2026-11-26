@@ -115,6 +115,14 @@ public class PedidoReporteService {
                 && pedido.getDetalles().isEmpty()) {
 
             for (DetalleEventoDTO item : evento.detalles()) {
+                // Un producto sin id no se puede contar en los reportes:
+                // se omite ese producto en vez de rechazar el evento completo.
+                if (item.productoId() == null) {
+                    System.out.println(
+                            "Producto sin productoId omitido en el pedido "
+                                    + evento.pedidoId());
+                    continue;
+                }
 
                 DetallePedidoReporte detalle = new DetallePedidoReporte();
 
